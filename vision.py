@@ -101,30 +101,3 @@ def black_and_white(image):
     return bw
 
 
-def detect_words(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    ret, thresh1 = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
-
-    # --- choosing the right kernel
-    # --- kernel size of 3 rows (to join dots above letters 'i' and 'j')
-    # --- and 10 columns to join neighboring letters in words and neighboring words
-    rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (15, 3))
-    dilation = cv2.dilate(thresh1, rect_kernel, iterations=1)
-    #cv2.imshow('dilation', dilation)
-
-    # ---Finding contours ---
-    _, contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-
-    im2 = image.copy()
-    for cnt in contours:
-        x, y, w, h = cv2.boundingRect(cnt)
-        cv2.rectangle(im2, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        roi = image[y:y+h, x:x+w]
-        #cv2.imshow("ROI", roi)
-        #cv2.waitKey(0)
-        cv2.dilate(roi, (5, 5), roi)
-        text = pytesseract.image_to_string(roi, config='--psm 7')
-        print("{}\n".format(text))
-
-    cv2.imshow('final', im2)
-    cv2.waitKey(0)
